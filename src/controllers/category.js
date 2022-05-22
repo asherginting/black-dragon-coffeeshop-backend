@@ -1,6 +1,7 @@
 const categoryModel = require('../models/category');
 const showApi = require('../helpers/showResponse');
 const validation = require('../helpers/validation');
+const validator = require('validator')
 
 const insertCategory = async (req, res) => {
   const data = {
@@ -39,11 +40,13 @@ const getCategories = async (req, res) => {
   let {
     name,
     page,
-    limit
+    limit,
+    specific
   } = req.query;
   name = name || '';
   page = ((page !== null && page !== '') ? parseInt(page) : 1);
   limit = ((limit !== null && limit !== '') ? parseInt(limit) : 5);
+  specific = ((specific !== null && specific !== '') ? specific : '');
   let pagination = {
     page,
     limit
@@ -62,8 +65,10 @@ const getCategories = async (req, res) => {
     const data = {
       name,
       limit,
-      offset
+      offset,
+      specific
     };
+
     const dataCategory = await categoryModel.getDataCategories(data);
 
     if (dataCategory.length > 0) {
@@ -101,8 +106,26 @@ const getCategory = async (req, res) => {
   }
 };
 
+const getCategory2 = async (req, res) => {
+  const {
+    id
+  } = req.params;
+
+  if (!validator.isNumeric(id)) {
+    return showApi.showResponse(res, "Id must be a number", null, null, 400)
+  }
+  const result = await categoryModel.getDataCategory(id);
+  if (result.length > 0) {
+    return showApi.showResponse(res, 'Detail category', result[0]);
+  } else {
+    return showApi.showResponse(res, 'Detail category not found!', null, null, 404);
+  }
+};
+
 const updateCategory = async (request, response) => {
-  const { id } = request.params;
+  const {
+    id
+  } = request.params;
 
   if (id) {
     if (!isNaN(id)) {
@@ -156,11 +179,11 @@ const deleteCategory = async (request, response) => {
         // const result = await categoryModel.getDataCategory(id);
         showApi.showResponse(response, 'Data category deleted successfully!', getDataCategory[0]);
       } else {
-        showApi.showResponse(response, 'Data category failed to delete!', null, 500);
+        showApi.showResponse(response, 'Data category failed to delete!', null, null, 500);
       }
     }
   } else {
-    showApi.showResponse(response, 'Data category not found!', null, 404);
+    showApi.showResponse(response, 'Data category not found!', null, null, 404);
   }
 };
 
@@ -168,6 +191,7 @@ module.exports = {
   insertCategory,
   getCategories,
   getCategory,
+  getCategory2,
   updateCategory,
   deleteCategory
 };

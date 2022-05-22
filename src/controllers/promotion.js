@@ -4,13 +4,23 @@ const showApi = require('../helpers/showResponse');
 // const auth = require('../helpers/auth')
 const validation = require('../helpers/validation');
 const validator = require('validator');
-const { request } = require('express');
-const { response } = require('express');
+const {
+  request
+} = require('express');
+const {
+  response
+} = require('express');
 
 // const { APP_URL } = process.env
 
 const getPromotions = async (request, response) => {
-  let { name, page, limit, sort, order } = request.query;
+  let {
+    name,
+    page,
+    limit,
+    sort,
+    order
+  } = request.query;
   name = name || '';
   sort = sort || 'pr.created_at';
   const filledFilter = ['discount_value', 'delivery_method_id'];
@@ -18,7 +28,10 @@ const getPromotions = async (request, response) => {
   page = ((page != null && page !== '') ? parseInt(page) : 1);
   limit = ((limit != null && limit !== '') ? parseInt(limit) : 5);
   order = order || 'desc';
-  let pagination = { page, limit };
+  let pagination = {
+    page,
+    limit
+  };
   let route = 'promotions?';
   let searchParam = '';
   if (name) {
@@ -40,15 +53,28 @@ const getPromotions = async (request, response) => {
   const errValidation = await validation.validationPagination(pagination);
   if (errValidation == null) {
     const offset = (page - 1) * limit;
-    console.log(offset);
-    const data = { name, filter, limit, offset, sort, order };
+    // console.log(offset);
+    const data = {
+      name,
+      filter,
+      limit,
+      offset,
+      sort,
+      order
+    };
     const dataPromo = await promotionModel.getDataPromotions(data);
-    console.log(dataPromo);
+    // console.log(dataPromo);
     if (dataPromo.length > 0) {
       const result = await promotionModel.countDataPromotions(data);
       try {
-        const { total } = result[0];
-        pagination = { ...pagination, total: total, route: route };
+        const {
+          total
+        } = result[0];
+        pagination = {
+          ...pagination,
+          total: total,
+          route: route
+        };
         return showApi.showResponseWithPagination(response, 'List Data Promotions', dataPromo, pagination);
       } catch (err) {
         return showApi.showResponse(response, err.message, null, 500);
@@ -129,7 +155,16 @@ const getPromotions = async (request, response) => {
 
 const getListPromotions = async (request, response) => {
   try {
-    const { name, discount_value, available_start_at, available_end_at, page, normal_price, limit, sort, order } = request.query;
+    const {
+      name,
+      discount_value,
+      date,
+      page,
+      normal_price,
+      limit,
+      sort,
+      order
+    } = request.query;
 
     if (!page) {
       showApi.showResponse(response, 'Page must be filled!', null, null, 400);
@@ -142,8 +177,7 @@ const getListPromotions = async (request, response) => {
     const dataFilter = {
       name: name || null,
       discount_value: discount_value || null,
-      available_start_at: available_start_at || null,
-      available_end_at: available_end_at || null,
+      date: date || null,
       normal_price: normal_price || null,
       page,
       limit,
@@ -157,7 +191,7 @@ const getListPromotions = async (request, response) => {
       const pageInfo = showApi.pageInfoCreator(total[0].total, 'promotions', dataFilter);
       return showApi.returningSuccess(response, 200, 'Data promotions retrieved successfully!', showApi.dataMapping(resultDataPromo), pageInfo);
     } else {
-      return showApi.showResponse(response, 'Data not found!', null, null, 400);
+      return showApi.showResponse(response, 'Detail Promotion not found!', null, null, 404);
     }
   } catch (err) {
     return showApi.showResponse(response, err.message, null, null, 500);
@@ -165,21 +199,39 @@ const getListPromotions = async (request, response) => {
 };
 
 const getPromotion = async (request, response) => {
-  const { id } = request.params;
+  const {
+    id
+  } = request.params;
 
   const result = await promotionModel.getDataPromotion(id);
   if (result.length > 0) {
-    return showApi.showResponse(response, 'Detail Promotion', result[0]);
+    return showApi.showResponse(response, 'Detail Promotion', showApi.dataMapping(result)[0]);
   } else {
-    return showApi.showResponse(response, 'Detail Promotion not found!', null, 404);
+    return showApi.showResponse(response, 'Detail Promotion not found!', null, null, 404);
   }
 };
 
 const insertPromotion = async (request, response) => {
   try {
-    const { name, code, description, normal_price, discount_value, available_start_at, available_end_at } = request.body;
-    const data = { name, code, description, normal_price, discount_value, available_start_at, available_end_at };
-    console.log(data);
+    const {
+      name,
+      code,
+      description,
+      normal_price,
+      discount_value,
+      available_start_at,
+      available_end_at
+    } = request.body;
+    const data = {
+      name,
+      code,
+      description,
+      normal_price,
+      discount_value,
+      available_start_at,
+      available_end_at
+    };
+    // console.log(data);
     if (request.file) {
       data.image = request.file.path;
     }
@@ -204,15 +256,15 @@ const insertPromotion = async (request, response) => {
 
 const updatePromotion = async (request, response) => {
   try {
-    const { id } = request.params;
+    const {
+      id
+    } = request.params;
     if (!validator.isEmpty(id)) {
       if (validator.isNumeric(id)) {
         const getDataPromotion = await promotionModel.getDataPromotion(id);
         if (getDataPromotion.length > 0) {
           const filled = ['name', 'code', 'description', 'normal_price', 'discount_value', 'available_start_at', 'available_end_at'];
-          const error = null;
           const data = {};
-
           filled.forEach((value) => {
             if (request.body[value]) {
               if (request.file) {
@@ -221,7 +273,6 @@ const updatePromotion = async (request, response) => {
               data[value] = request.body[value];
             }
           });
-
           const result = await promotionModel.updateDataPromotion(data, id);
           if (result.affectedRows > 0) {
             const result = await promotionModel.getDataPromotion(id);
@@ -230,13 +281,11 @@ const updatePromotion = async (request, response) => {
             return showApi.showResponse(response, 'Data Promotion failed to update !', null, null, 400);
           }
         } else {
-          return showApi.showResponse(response, 'Data not found!');
+          return showApi.showResponse(response, 'Data not found!', null, null, 400);
         }
       } else {
-        return showApi.showResponse(response, 'Id must be a number!');
+        return showApi.showResponse(response, 'Id must be a number!', null, null, 400);
       }
-    } else {
-      return showApi.showResponse(response, 'Id must be filled!');
     }
   } catch (error) {
     return showApi.showResponse(response, error.message, null, null, 500);
@@ -245,7 +294,9 @@ const updatePromotion = async (request, response) => {
 
 const deletePromotion = async (request, response) => {
   try {
-    const { id } = request.params;
+    const {
+      id
+    } = request.params;
 
     if (!validator.isEmpty(id)) {
       if (validator.isNumeric(id)) {
@@ -258,17 +309,23 @@ const deletePromotion = async (request, response) => {
             return showApi.showResponse(response, 'Data Promotion failed to delete !');
           }
         } else {
-          return showApi.showResponse(response, 'Data not found!');
+          return showApi.showResponse(response, 'Data not found!', null, null, 400);
         }
       } else {
-        return showApi.showResponse(response, 'Id must be a number!');
+        return showApi.showResponse(response, 'Id must be a number!', null, null, 400);
       }
     } else {
-      return showApi.showResponse(response, 'Id must be filled!');
+      return showApi.showResponse(response, 'Id must be filled!', null, null, 400);
     }
   } catch (error) {
     return showApi.showResponse(response, error.message, null, null, 500);
   }
 };
 
-module.exports = { getListPromotions, getPromotion, insertPromotion, updatePromotion, deletePromotion };
+module.exports = {
+  getListPromotions,
+  getPromotion,
+  insertPromotion,
+  updatePromotion,
+  deletePromotion
+};

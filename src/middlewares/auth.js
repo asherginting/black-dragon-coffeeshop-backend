@@ -71,8 +71,11 @@ exports.verifyUser = (req, res, next) => {
     // put user data to headers object
     req.headers.user = {
       id: String(verifyUser.id),
-      role: verifyUser.role
+      role: verifyUser.role,
+      userProfileId: verifyUser.userProfileId,
     };
+
+    console.log(req.headers.user);
 
     next();
   } catch (error) {

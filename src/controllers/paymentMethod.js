@@ -51,6 +51,41 @@ const getPaymentMethods = async (request, response) => {
   }
 };
 
+const getListDataPaymentMethod = async (request, response) => {
+  let { name, page, limit, sort, order } = request.query;
+
+  page = page || '1';
+  limit = limit || '5';
+  if (!validator.isEmpty(page)) {
+    if (!validator.isNumeric(page)) {
+      return showApi.showResponse(response, 'Page must be z number!', null, null, 400);
+    }
+  }
+
+  if (!validator.isEmpty(limit)) {
+    if (!validator.isNumeric(page)) {
+      return showApi.showResponse(response, 'Limit must be a number!', null, null, 400);
+    }
+  }
+
+  const dataFilter = {
+    name: name || null,
+    page: parseInt(page),
+    limit: parseInt(limit),
+    sort: sort || null,
+    order: order || null
+  };
+
+  const dataPaymentMethod = await paymentMethodModel.getDataListPaymentMethods(dataFilter);
+  if (dataPaymentMethod.length > 0) {
+    const total = await paymentMethodModel.countDataListPaymentMethods(dataFilter);
+    const pageInfo = showApi.pageInfoCreator(total[0].total, 'paymentMethod', dataFilter);
+    return showApi.returningSuccess(response, 200, 'Data payment method retrieved successfully!', dataPaymentMethod, pageInfo);
+  } else {
+    return showApi.showResponse(response, 'Data not found!', null, null, 400);
+  }
+};
+
 const getPaymentMethod = async (request, response) => {
   const { id } = request.params;
 
@@ -145,4 +180,4 @@ const deletePaymentMethod = async (request, response) => {
   }
 };
 
-module.exports = { getPaymentMethods, getPaymentMethod, insertPaymentNethod, updatePaymentMethod, deletePaymentMethod };
+module.exports = { getPaymentMethods, getListDataPaymentMethod, getPaymentMethod, insertPaymentNethod, updatePaymentMethod, deletePaymentMethod };

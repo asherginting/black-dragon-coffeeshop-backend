@@ -43,15 +43,26 @@ exports.deleteDataCategory = (id) => new Promise((resolve, reject) => {
 });
 
 exports.getDataCategories = (data) => new Promise((resolve, reject) => {
-  const query = db.query(`SELECT id, name FROM categories WHERE name like '%${data.name}%' LIMIT ${data.limit} OFFSET ${data.offset}`, (error, result) => {
+  console.log(data);
+  const query = `
+    SELECT id, name 
+    FROM categories 
+    ${!data.specific ? `WHERE name LIKE '%${data.name}%'` : `WHERE name='${data.name}'`}
+    LIMIT ${data.limit} OFFSET ${data.offset}
+  `
+  const ss = db.query(query, (error, result) => {
     if (error) reject(error);
     resolve(result);
   });
-  console.log(query.sql);
+  console.log(ss.sql);
 });
 
 exports.countDataCategories = (data) => new Promise((resolve, reject) => {
-  db.query(`SELECT COUNT(*) AS total FROM categories where name like '%${data.name}%' LIMIT ${data.limit} `, (error, result) => {
+  db.query(`
+      SELECT COUNT(*) AS total 
+      FROM categories 
+      ${!data.specific ? `WHERE name LIKE '%${data.name}%'` : `WHERE name='${data.name}'`}
+    `, (error, result) => {
     if (error) reject(error);
     resolve(result);
   });

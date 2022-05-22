@@ -16,6 +16,6 @@ histories.get('/', verifyUser, getHistories);
 histories.get('/:id', verifyUser, getHistoriesById);
 histories.post('/', verifyUser, insertHistories);
 histories.patch('/:id', verifyAdmin, updateDataHistory);
-histories.delete('/:id', verifyAdmin, deleteDataHistory);
+histories.delete('/:id', verifyUser, deleteDataHistory);
 
 module.exports = histories;

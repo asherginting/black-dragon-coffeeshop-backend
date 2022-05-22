@@ -207,7 +207,8 @@ exports.listProduct = (data) => {
       limit,
       page,
       name,
-      category_id: categoryId
+      category_id: categoryId,
+      category_name: categoryName,
     } = data;
     const offset = (page - 1) * limit;
 
@@ -218,6 +219,7 @@ exports.listProduct = (data) => {
       ON p.category_id = c.id
       WHERE p.name LIKE '%${name || ''}%'
       ${categoryId ? `AND c.id = ${categoryId}` : ''}
+      ${categoryName ? `AND c.name = '${categoryName}'` : ''}
       LIMIT ${limit} OFFSET ${offset}
     `;
 
@@ -232,13 +234,19 @@ exports.listProduct = (data) => {
 exports.countListProduct = (data) => {
   return new Promise((resolve, reject) => {
     const {
-      name
+      name,
+      category_id: categoryId,
+      category_name: categoryName,
     } = data;
 
     const query = `
       SELECT COUNT(*) AS total
       FROM products p
+      LEFT JOIN categories c 
+      ON p.category_id = c.id
       WHERE p.name LIKE '%${name || ''}%'
+      ${categoryId ? `AND c.id = ${categoryId}` : ''}
+      ${categoryName ? `AND c.name = '${categoryName}'` : ''}
     `;
 
     db.query(query, (error, result) => {

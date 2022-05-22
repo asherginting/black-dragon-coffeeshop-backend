@@ -8,6 +8,7 @@ const {
   showResponse
 } = require('../helpers/showResponse');
 const userModel = require('../models/userModel');
+const modelUser = require('../models/user');
 const authModel = require('../models/authModel');
 const otpCodeModel = require('../models/otpCodeModel');
 const {
@@ -147,11 +148,25 @@ const sendCode = async (res, type, userId) => {
     });
 
     if (insertNewOtpCode.affectedRows > 0) {
+      // jika ingin matikan fitur email otp komen mulai dari sini
+
       const info = await sendMail({
         to: email,
         code: newOtpCode,
         reset: type === 'reset' || false
       });
+
+      // sampai sini
+
+      // lalu uncomment kode di bawah ini agar response tetap tampil
+
+      // const info = {
+      //   accepted: {
+      //     length: 1
+      //   }
+      // };
+
+      //  hingga di sini
 
       if (info.accepted.length > 0) {
         return true;
@@ -323,7 +338,7 @@ exports.verifyReset = async (req, res) => {
       const sendedCode = await sendCode(res, 'reset', user.id);
       console.log(sendedCode);
       if (sendedCode) {
-        return showResponse(res, 'Successfully sent code to reset password', null, null, 200);
+        return showResponse(res, 'Successfully sent code to reset password, check your email', null, null, 200);
       }
     }
 
@@ -365,6 +380,12 @@ exports.login = async (req, res) => {
         password: hashPassword
       } = dataUser[0];
 
+      const userProfile = await modelUser.getUserProfile(dataUser[0].id);
+
+      if (userProfile.length < 1) {
+        return showResponse(res, 'User profile is not found', null, null, 404);
+      }
+
       const checkPassword = await bcrypt.compare(dataLogin.password, hashPassword);
       console.log(checkPassword);
       if (checkPassword) {
@@ -372,11 +393,13 @@ exports.login = async (req, res) => {
           const data = {
             id: dataUser[0].id,
             role: dataUser[0].role,
-            confirm: dataUser[0].confirm
+            confirm: dataUser[0].confirm,
+            userProfileId: userProfile[0].id,
           };
           const token = jwt.sign(data, APP_SECRET);
           return showApi.showResponse(res, 'Login Success!', {
             id: dataUser[0].id,
+            userProfileId: userProfile[0].id,
             token
           });
         } else {

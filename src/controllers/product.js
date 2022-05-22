@@ -174,7 +174,7 @@ const getProduct = async (request, response) => {
   if (result.length > 0) {
     return showApi.showResponse(response, 'Detail Product', showApi.dataMapping(result)[0]);
   } else {
-    return showApi.showResponse(response, 'Detail Product not found!', null, 404);
+    return showApi.showResponse(response, 'Detail Product not found!', null, null, 404);
   }
 };
 
@@ -364,10 +364,10 @@ const deleteProduct = async (request, response) => {
       const result = await productModel.getDataProduct(id);
       showApi.showResponse(response, 'Data product deleted successfully!', result[0]);
     } else {
-      showApi.showResponse(response, 'Data product failed to delete!', null, 500);
+      showApi.showResponse(response, 'Data product failed to delete!', null, null, 500);
     }
   } else {
-    showApi.showResponse(response, 'Data product not found!', null, 404);
+    showApi.showResponse(response, 'Data product not found!', null, null, 404);
   }
 };
 
@@ -390,7 +390,8 @@ const listProduct = async (request, response) => {
       page: parseInt(page),
       limit: parseInt(limit),
       name: request.query.name || null,
-      category_id: request.query.category_id || null
+      category_id: request.query.category_id || null,
+      category_name: request.query.category_name || null
     };
 
     // console.log(dataForFilter);
@@ -461,7 +462,7 @@ const getFavorites = async (request, response) => {
       order
     };
     const dataFavorite = await productModel.getDataFavorites(data);
-    console.log(dataFavorite);
+    // console.log(dataFavorite);
     if (dataFavorite.length > 0) {
       const result = await productModel.countDataFavorites(data);
       try {
@@ -473,9 +474,19 @@ const getFavorites = async (request, response) => {
           total: total,
           route: route
         };
-        return showApi.showResponseWithPagination(response, 'List Data Product Favorites', showApi.dataMapping(dataFavorite), pagination);
+
+        const dataFilter = {
+          name: request.query.name || null,
+          page: parseInt(request.query.page) || 1,
+          limit: parseInt(request.query.limit) || 5,
+          order: request.query.order || null
+        }
+
+        const pageInfo = showApi.pageInfoCreator(total, 'products/f/favorite', dataFilter);
+        return showApi.returningSuccess(response, 200, 'Data product retrieved successfully!', showApi.dataMapping(dataFavorite), pageInfo);
+        // return showApi.showResponseWithPagination(response, 'List Data Product Favorites', showApi.dataMapping(dataFavorite), pagination);
       } catch (err) {
-        return showApi.showResponse(response, err.message, null, 500);
+        return showApi.showResponse(response, err.message, null, null, 500);
       }
     } else {
       return showApi.showResponse(response, 'Data not found', null, null, 404);

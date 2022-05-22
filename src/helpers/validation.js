@@ -7,12 +7,11 @@ const deliveryMethodModel = require('../models/deliveryMethod');
 const sizeModel = require('../models/size');
 const validator = require('validator');
 const productModel = require('../models/product');
-const promoModel = require('../models/promotion');
-const userModel = require('../models/userModel');
+const userModel = require('../models/user');
 
 exports.validationDataProducts = async (data) => {
   let result = null;
-  if (data.name == null || data.name == '') {
+  if (data.name === null || data.name === '') {
     result = {
       name: 'Name must be filled'
     };
@@ -20,56 +19,56 @@ exports.validationDataProducts = async (data) => {
 
   console.log(data);
 
-  if (data.category_id == null || data.category_id == '') {
+  if (data.category_id === null || data.category_id === '') {
     result = {
       ...result,
       category_id: 'Id category must be filled.'
     };
   } else {
     const getDataCategory = await categoryModel.getDataCategory(data.category_id);
-    if (getDataCategory.length == 0) {
+    if (getDataCategory.length === 0) {
       result = {
         category: 'Category not found.'
       };
     }
   }
 
-  // if (data.delivery_method_id == null || data.delivery_method_id == '') {
+  // if (data.delivery_method_id === null || data.delivery_method_id === '') {
   //   result = {
   //     ...result,
   //     category_id: 'id delivery method must be filled.'
   //   };
   // } else {
   //   const getDeliveryMethod = await deliveryMethodModel.getDataDeliveryMethod(data.delivery_method_id);
-  //   if (getDeliveryMethod == 0) {
+  //   if (getDeliveryMethod === 0) {
   //     result = {
   //       delivery_method_id: 'id delivery method not found.'
   //     };
   //   }
   // }
 
-  // if (data.size_id == null || data.size_id == '') {
+  // if (data.size_id === null || data.size_id === '') {
   //   result = {
   //     ...result,
   //     size_id: 'id size must be filled.'
   //   };
   // } else {
   //   const getDataSize = await sizeModel.getDataSize(data.size_id);
-  //   if (getDataSize == 0) {
+  //   if (getDataSize === 0) {
   //     result = {
   //       size: 'id size not found.'
   //     };
   //   }
   // }
 
-  if (data.description == null || data.description == '') {
+  if (data.description === null || data.description === '') {
     result = {
       ...result,
       description: 'Description must be filled.'
     };
   }
 
-  if (data.price == null || data.price == '') {
+  if (data.price === null || data.price === '') {
     result = {
       ...result,
       price: 'Price must be filled'
@@ -79,14 +78,14 @@ exports.validationDataProducts = async (data) => {
       ...result,
       price: 'Price must be a number.'
     };
-  } else if (parseInt(data.price) == 0) {
+  } else if (parseInt(data.price) === 0) {
     result = {
       ...result,
       price: 'Price must be must be greater than 0.'
     };
   }
 
-  if (data.stocks == null || data.stocks == '') {
+  if (data.stocks === null || data.stocks === '') {
     result = {
       ...result,
       stocks: 'Stock must be filled'
@@ -96,21 +95,21 @@ exports.validationDataProducts = async (data) => {
       ...result,
       stocks: 'Stock must be a number.'
     };
-  } else if (parseInt(data.stocks) == 0) {
+  } else if (parseInt(data.stocks) === 0) {
     result = {
       ...result,
       stocks: 'Stock must be must be greater than 0.'
     };
   }
 
-  if (data.delivery_time_start == null || data.delivery_time_start == '') {
+  if (data.delivery_time_start === null || data.delivery_time_start === '') {
     result = {
       ...result,
       delivery_time_start: 'Delivery time start must be filled'
     };
   }
 
-  if (data.delivery_time_end == null || data.delivery_time_end == '') {
+  if (data.delivery_time_end === null || data.delivery_time_end === '') {
     result = {
       ...result,
       delivery_time_end: 'Delivery time end must be filled'
@@ -124,11 +123,13 @@ exports.validationDataTax = async (data) => {
   let result = null;
   if (data.name === null || data.name === '') {
     result = {
+      ...result,
       name: 'Name must be filled'
     };
   }
   if (!data.value) {
     result = {
+      ...result,
       value: 'Invalid input'
     };
   }
@@ -145,11 +146,6 @@ exports.validationDataPromotionDeliveryMethods = async (data) => {
     result = {
       promotion_id: 'Invalid input, promotion_id must be a number!'
     };
-  } else {
-    const dataPromo = await promoModel.getDataPromotion(data.promotion_id);
-    if (dataPromo.length === 0) {
-      result = { promotion_id: 'promotion id not found.' };
-    }
   }
   // if (!data.promotion_id) {
   //   result = {
@@ -167,11 +163,6 @@ exports.validationDataPromotionDeliveryMethods = async (data) => {
       ...result,
       delivery_method_id: 'Invalid input, delivery_method_id must be a number!'
     };
-  } else {
-    const dataDeliveryMethod = await deliveryMethodModel.getDataDeliveryMethod(data.delivery_method_id);
-    if (dataDeliveryMethod.length === 0) {
-      result = { ...result, delivery_method_id: 'delivery method id not found.' };
-    }
   }
 
   return result;
@@ -186,7 +177,13 @@ exports.validationDataSize = async (data) => {
   }
   if (!data.extra_price) {
     result = {
-      name: 'Invalid input'
+      ...result,
+      price: 'Price must be filled'
+    };
+  } else if (!validator.isNumeric(data.extra_price)) {
+    result = {
+      ...result,
+      price: 'Price must be a number'
     };
   }
 
@@ -197,11 +194,13 @@ exports.validationDataDeliveryMethod = async (data) => {
   let result = null;
   if (data.name === null || data.name === '') {
     result = {
+      ...result,
       name: 'Name must be filled'
     };
   }
   if (!data.cost) {
     result = {
+      ...result,
       cost: 'Invalid input'
     };
   }
@@ -210,24 +209,28 @@ exports.validationDataDeliveryMethod = async (data) => {
 
 exports.validationDataPromotionSizes = async (data) => {
   let result = null;
-  if (data.promotion_id == null || data.promotion_id === undefined) {
+  if (data.promotion_id === null || data.promotion_id === undefined) {
     result = {
+      ...result,
       promotion_id: 'promotion_id must be filled'
     };
   }
   if (!data.promotion_id) {
     result = {
+      ...result,
       promotion_id: 'Invalid input, promotion_id must be a number!'
     };
   }
 
-  if (data.size_id == null || data.size_id === undefined) {
+  if (data.size_id === null || data.size_id === undefined) {
     result = {
+      ...result,
       size_id: 'size_id must be filled'
     };
   }
   if (!data.size_id) {
     result = {
+      ...result,
       size_id: 'Invalid input, size_id must be a number!'
     };
   }
@@ -575,58 +578,35 @@ exports.validationLogin = async (data) => {
   return result;
 };
 
+exports.validationSizeForProduct = async (data) => {
+  let result = null
+  console.log("masuk validasi size for product")
+  if (validator.isEmpty(data.product_id)) {
+    result = { product_id: 'product_id must be filled.' }
+  } else if (!validator.isNumeric(data.product_id)) {
+    result = { product_id: 'product_id must be a number.' }
+  } else {
+    const dataProduct = await productModel.getDataProduct(data.product_id)
+    if (dataProduct.length === 0) {
+      result = { product_id: 'Data product not found.' }
+    }
+  }
+
+  if (validator.isEmpty(data.size_id)) {
+    result = { ...result, size_id: 'id size must be filled.' }
+  } else if (!validator.isNumeric(data.size_id)) {
+    result = { ...result, size_id: 'Id size must be a number.' }
+  } else {
+    const dataSizeOfProduct = await sizeModel.getDataSize(data.size_id)
+    if (dataSizeOfProduct.length === 0) {
+      result = { ...result, size_id: 'Data size not found.' }
+    }
+  }
+  return result
+}
+
 exports.validationRegister = async (data) => {
   let result = null;
-
-  if (!data.email || data.email === '') {
-    result = {
-      email: 'Email must be filled.'
-    };
-  } else {
-    const resultEmail = await userModel.getDataUerByEmail(data.email);
-    console.log(resultEmail);
-    if (resultEmail.length > 0) {
-      result = {
-        email: 'Email has already used.'
-      };
-    }
-  }
-
-  if (!data.phone || data.phone === '') {
-    result = {
-      ...result,
-      phone: 'phone must be filled.'
-    };
-  }
-
-  if (!data.password || data.password === '') {
-    result = {
-      ...result,
-      password: 'Password must be filled.'
-    };
-  }
-  return result;
-};
-
-exports.validationUser = async (data) => {
-  let result = null;
-
-  if (!data.email || data.email === '') {
-    result = {
-      email: 'Email must be filled.'
-    };
-  } else {
-    const resultEmail = await userModel.getDataUerByEmailUpdate(
-      data.email,
-      data.id
-    );
-    console.log(resultEmail);
-    if (resultEmail.length > 0) {
-      result = {
-        email: 'Email has already used.'
-      };
-    }
-  }
 
   if (!data.phone || data.phone === '') {
     result = {
@@ -679,7 +659,15 @@ exports.validationUser = async (data) => {
 
 exports.validationDataPromotion = (data) => {
   let result = null;
-  const { name, code, description, normal_price, discount_value, available_start_at, available_end_at } = data;
+  const {
+    name,
+    code,
+    description,
+    normal_price,
+    discount_value,
+    available_start_at,
+    available_end_at
+  } = data;
   if (validator.isEmpty(name)) {
     result = {
       name: 'Name must be filled.'
@@ -714,19 +702,34 @@ exports.validationDataPromotion = (data) => {
       discount: 'Discount value must be filled!'
     };
   } else if (!validator.isNumeric(data.discount_value)) {
-    result = { ...result, discount_value: 'Discount value must be a number!' };
+    result = {
+      ...result,
+      discount_value: 'Discount value must be a number!'
+    };
   }
 
   if (validator.isEmpty(available_start_at)) {
-    result = { ...result, available_start_at: 'Available start at must be filled!' };
+    result = {
+      ...result,
+      available_start_at: 'Available start at must be filled!'
+    };
   } else if (!validator.isDate(available_start_at)) {
-    result = { ...result, available_start_at: 'Available start at must be a date!' };
+    result = {
+      ...result,
+      available_start_at: 'Available start at must be a date!'
+    };
   }
 
   if (validator.isEmpty(available_end_at)) {
-    result = { ...result, available_end_at: 'Available end at must be filled!' };
+    result = {
+      ...result,
+      available_end_at: 'Available end at must be filled!'
+    };
   } else if (!validator.isDate(available_end_at)) {
-    result = { ...result, available_end_at: 'Available end at must be a date!' };
+    result = {
+      ...result,
+      available_end_at: 'Available end at must be a date!'
+    };
   }
   return result;
 };
@@ -797,3 +800,14 @@ exports.validationDataPromotion = (data) => {
 //     }
 
 // ];
+
+exports.noNullData = (data, rules) => {
+  for (const key in data) {
+    if (data[key] === null) {
+      const ruleName = rules[key].split('|').shift();
+      return `Your ${key} must be ${ruleName === key ? 'have a valid type' : ruleName}`;
+    }
+  }
+
+  return '';
+};
